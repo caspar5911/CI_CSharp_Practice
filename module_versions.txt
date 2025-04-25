@@ -1,1 +1,1 @@
-Modules/ModuleC|1.0.1.2
+Modules/ModuleC|1.0.1.3
