@@ -47,7 +47,8 @@ jobs:
         run: |
           # Get commit messages between the current and previous commit
           commits=$(git log --oneline ${{ github.event.before }}..${{ github.sha }})
-
+          echo "HELPPPP"
+          echo "$commits"
           # Initialize version bump type
           version_bump="revision"  # Default to patch
 
