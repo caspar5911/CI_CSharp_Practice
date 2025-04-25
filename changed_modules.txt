@@ -1,1 +1,6 @@
-.github/workflows/versioning.yml
+ModuleB/Program.cs
+ModuleB/Properties/AssemblyInfo.cs
+changed_modules.txt
+module_versions.txt
+modules_with_assemblyinfo.txt
+valid_modules.txt
