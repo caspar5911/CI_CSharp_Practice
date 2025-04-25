@@ -1,0 +1,13 @@
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\bin\Debug\net6.0\ModuleB.exe
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\bin\Debug\net6.0\ModuleB.deps.json
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\bin\Debug\net6.0\ModuleB.runtimeconfig.json
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\bin\Debug\net6.0\ModuleB.dll
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\bin\Debug\net6.0\ModuleB.pdb
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\obj\Debug\net6.0\ModuleB.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\obj\Debug\net6.0\ModuleB.csproj.CoreCompileInputs.cache
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\obj\Debug\net6.0\ModuleB.sourcelink.json
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\obj\Debug\net6.0\ModuleB.dll
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\obj\Debug\net6.0\refint\ModuleB.dll
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\obj\Debug\net6.0\ModuleB.pdb
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\obj\Debug\net6.0\ModuleB.genruntimeconfig.cache
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleB\obj\Debug\net6.0\ref\ModuleB.dll

@@ -1,0 +1,16 @@
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\bin\Debug\net6.0\ModuleA.exe
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\bin\Debug\net6.0\ModuleA.deps.json
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\bin\Debug\net6.0\ModuleA.runtimeconfig.json
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\bin\Debug\net6.0\ModuleA.dll
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\bin\Debug\net6.0\ModuleA.pdb
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\bin\Debug\net6.0\Newtonsoft.Json.dll
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\obj\Debug\net6.0\ModuleA.csproj.AssemblyReference.cache
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\obj\Debug\net6.0\ModuleA.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\obj\Debug\net6.0\ModuleA.csproj.CoreCompileInputs.cache
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\obj\Debug\net6.0\ModuleA.sourcelink.json
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\obj\Debug\net6.0\ModuleA.csproj.Up2Date
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\obj\Debug\net6.0\ModuleA.dll
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\obj\Debug\net6.0\refint\ModuleA.dll
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\obj\Debug\net6.0\ModuleA.pdb
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\obj\Debug\net6.0\ModuleA.genruntimeconfig.cache
+C:\Users\Caspar\Desktop\CICDNotes\CI_CSharp_Practice\ModuleA\obj\Debug\net6.0\ref\ModuleA.dll
