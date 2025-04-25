@@ -56,11 +56,11 @@ jobs:
           echo "$commits" | while read -r commit; do
             echo "CLLLLL"
             echo "$commit"
-            if [[ "$commit" == *"BREAKING CHANGE:"* ]]; then
+            if [[ "$commit" == *BREAKING CHANGE:* ]]; then
               version_bump="major"
-            elif [[ "$commit" == *"feat:"* ]]; then
+            elif [[ "$commit" == *feat:* ]]; then
               version_bump="minor"
-            elif [[ "$commit" == *"fix:"* ]]; then
+            elif [[ "$commit" == *fix:* ]]; then
               version_bump="build"
             fi
           done
@@ -88,11 +88,11 @@ jobs:
                 IFS='.' read -r major minor build revision <<< "$current_version"
                 
                 # Determine which part to bump based on the version bump type
-                if [ "$version_bump" == "major" ]; then
+                if [ "$version_bump" == major ]; then
                   new_version="$((major + 1)).0.0.0"
-                elif [ "$version_bump" == "minor" ]; then
+                elif [ "$version_bump" == minor ]; then
                   new_version="$major.$((minor + 1)).0.0"
-                elif [ "$version_bump" == "build" ]; then
+                elif [ "$version_bump" == build ]; then
                   new_version="$major.$minor.$((build + 1)).0"
                 else
                   new_version="$major.$minor.$build.$((revision + 1))"
