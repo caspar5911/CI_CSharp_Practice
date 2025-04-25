@@ -1,0 +1,44 @@
+name: Init Tags
+
+on:
+  workflow_dispatch:
+
+jobs:
+  init-tags:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the current code
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Run init tags script
+      - name: Initialize Tags
+        run: |
+          # Define the logic to initialize tags
+          echo "Initializing tags for all modules..."
+
+          # Get the list of all directories that might contain an AssemblyInfo.cs file
+          directories=$(find . -type f -name "AssemblyInfo.cs" -exec dirname {} \; | sort | uniq)
+
+          # Loop over directories and initialize tags for each module
+          for dir in $directories; do
+            echo "Checking $dir for tags..."
+
+            # Determine the tag name (module name and initial version)
+            module_name=$(basename "$dir")
+            tag="v1.0.0"
+
+            # Check if the tag already exists
+            if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
+              echo "Tag $tag already exists for $module_name, skipping creation."
+            else
+              echo "Creating tag: $tag for $module_name"
+              git tag -a "$tag" -m "Initial version for $module_name"
+            fi
+          done
+
+          # Push the tags to the remote repository
+          echo "Pushing tags to the repository..."
+          git push --tags
