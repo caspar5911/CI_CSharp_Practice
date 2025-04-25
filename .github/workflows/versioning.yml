@@ -12,37 +12,34 @@ jobs:
       # Checkout the current code
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Pull Latest Changes
-        run: |
-          git pull
-          git fetch
+        with:
+          fetch-depth: 0
 
       # Detect which files changed
       - name: Detect Changed Files
         id: detect_changes
         run: |
           # Get the list of changed files between current and previous commit
-          git diff --unshallow --name-only ${{ github.event.before }} ${{ github.sha }} > changed_modules.txt || true
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }} > changed_modules.txt || true
 
-          # # Empty the output file that stores valid module paths
-          # > modules_with_assemblyinfo.txt
+          # Empty the output file that stores valid module paths
+          > modules_with_assemblyinfo.txt
 
-          # # Loop through changed files to find closest AssemblyInfo.cs file upwards
-          # while read -r filepath; do
-          #   dir=$(dirname "$filepath")
-          #   while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
-          #     if [ -f "$dir/Properties/AssemblyInfo.cs" ]; then
-          #       echo "$dir" >> modules_with_assemblyinfo.txt
-          #       break
-          #     fi
-          #     dir=$(dirname "$dir")
-          #   done
-          # done < changed_modules.txt
+          # Loop through changed files to find closest AssemblyInfo.cs file upwards
+          while read -r filepath; do
+            dir=$(dirname "$filepath")
+            while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
+              if [ -f "$dir/Properties/AssemblyInfo.cs" ]; then
+                echo "$dir" >> modules_with_assemblyinfo.txt
+                break
+              fi
+              dir=$(dirname "$dir")
+            done
+          done < changed_modules.txt
 
-          # # Deduplicate and sort the list of valid modules
-          # sort modules_with_assemblyinfo.txt | uniq > valid_modules.txt
-          # cat changed_modules.txt
+          # Deduplicate and sort the list of valid modules
+          sort modules_with_assemblyinfo.txt | uniq > valid_modules.txt
+          cat changed_modules.txt
 
       # Update the AssemblyFileVersion (4-digit) in AssemblyInfo.cs
       - name: Bump FileVersion in AssemblyInfo.cs
