@@ -124,13 +124,16 @@ jobs:
             while IFS='|' read -r module version; do
               # Make sure version is quoted and escaped properly
               tag="${module}/v${version}"
-              echo "Creating tag: $tag"
-          
-              # Add quotes to handle special characters properly
-              git tag -a "$tag" -m "Bump ${module} to ${version}"
-              	
-              # Push with a token using the full URL (ensure URL is correct)
-              git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/caspar5911/CI_CSharp_Practice" "$tag"
+
+              # Check if the tag already exists
+              if git rev-parse "$tag" >/dev/null 2>&1; then
+                echo "Tag $tag already exists, skipping tag creation."
+              else
+                echo "Creating tag: $tag"
+                # Create and push the tag
+                git tag -a "$tag" -m "Bump ${module} to ${version}"
+                git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/caspar5911/CI_CSharp_Practice" "$tag"
+              fi
             done < module_versions.txt
           else
             echo "No versioned modules to tag."
