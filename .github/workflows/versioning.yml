@@ -108,11 +108,19 @@ jobs:
       - name: Commit version bumps
         run: |
           if [ -f module_versions.txt ]; then
-            git config user.name "github-actions"
-            git config user.email "github-actions@github.com"
-            git add .
-            git commit -m "Bump AssemblyFileVersion for updated modules"
-            git push
+            # Check if there are any changes to commit
+            git diff --exit-code || echo "Changes detected"
+            
+            # If there are changes, commit and push
+            if [[ -n $(git status -s) ]]; then
+              git config user.name "github-actions"
+              git config user.email "github-actions@github.com"
+              git add .
+              git commit -m "Bump AssemblyFileVersion for updated modules"
+              git push
+            else
+              echo "No changes to commit."
+            fi
           else
             echo "No modules updated."
           fi
