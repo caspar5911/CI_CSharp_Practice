@@ -58,7 +58,9 @@ jobs:
             elif [[ "$commit" == *"feat:"* ]]; then
               version_bump="minor"
             elif [[ "$commit" == *"fix:"* ]]; then
-              version_bump="patch"
+              version_bump="build"
+            else
+              version_bump="revision"
             fi
           done
 
