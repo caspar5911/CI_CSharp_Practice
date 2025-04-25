@@ -1,1 +1,1 @@
-ModuleA|1.0.0.1
+ModuleA|1.0.0.2
