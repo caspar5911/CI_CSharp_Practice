@@ -46,28 +46,27 @@ jobs:
         id: detect_version
         run: |
           # Get commit messages between the current and previous commit
-          commits=$(git log --oneline ${{ github.event.before }}..${{ github.sha }})
-          echo "HELPPPP"
+          commits=$(git log --pretty=format:"%s" ${{ github.event.before }}..${{ github.sha }})
+      
+          echo "All commit messages:"
           echo "$commits"
-          # Initialize version bump type
-          version_bump="revision"  # Default to patch
-
-          # Check each commit message for breaking change (major), feat (minor), or fix (build)
-          echo "$commits" | while read -r commit; do
-            echo "CLLLLL"
-            echo "$commit"
-            if [[ "$commit" == "*BREAKING CHANGE:*" ]]; then
+      
+          version_bump="revision"  # Default
+      
+          while read -r commit; do
+            echo "Checking: $commit"
+            if [[ "$commit" == *"BREAKING CHANGE:"* ]]; then
               version_bump="major"
-            elif [[ "$commit" == "*feat:*" ]]; then
+              break  # No need to check further; highest level
+            elif [[ "$commit" == *"feat:"* && "$version_bump" != "major" ]]; then
               version_bump="minor"
-            elif [[ "$commit" == "*fix:*" ]]; then
+            elif [[ "$commit" == *"fix:"* && "$version_bump" == "revision" ]]; then
               version_bump="build"
             fi
-          done
-
-          # Output the detected version bump type
+          done <<< "$commits"
+      
           echo "Version bump detected: $version_bump"
-          echo "::set-output name=version_bump::$version_bump"
+          echo "version_bump=$version_bump" >> $GITHUB_OUTPUT
 
       # Update the AssemblyFileVersion (4-digit) based on version bump
       - name: Bump FileVersion in AssemblyInfo.cs
