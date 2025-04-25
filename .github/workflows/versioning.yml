@@ -52,15 +52,15 @@ jobs:
                 # Extract full 4-part version (e.g., 1.2.3.4)
                 current_version=$(grep -oP 'AssemblyFileVersion\("\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$file")
                 echo "Current version: $current_version"
-
+          
                 IFS='.' read -r major minor patch build <<< "$current_version"
-
+          
                 # Bump build number only
                 new_version="$major.$minor.$patch.$((build + 1))"
-
-                # Use sed to replace only the version part
-                sed -i "s/AssemblyFileVersion(\"$current_version/AssemblyFileVersion(\"$new_version/" "$file"
-
+          
+                # Replace full 4-part version safely
+                sed -i "s/AssemblyFileVersion(\"$current_version\"/AssemblyFileVersion(\"$new_version\"/" "$file"
+          
                 echo "$module_path|$new_version" >> module_versions.txt
                 echo "Updated to version: $new_version"
               fi
@@ -68,6 +68,7 @@ jobs:
           else
             echo "No valid modules found."
           fi
+
 
       # Commit the updated version files
       - name: Commit version bumps
