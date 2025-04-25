@@ -41,10 +41,37 @@ jobs:
           sort modules_with_assemblyinfo.txt | uniq > valid_modules.txt
           cat changed_modules.txt
 
-      # Update the AssemblyFileVersion (4-digit) in AssemblyInfo.cs
+      # Detect commit message type (major, minor, patch)
+      - name: Detect Version Type
+        id: detect_version
+        run: |
+          # Get commit messages between the current and previous commit
+          commits=$(git log --oneline ${{ github.event.before }}..${{ github.sha }})
+
+          # Initialize version bump type
+          version_bump="patch"  # Default to patch
+
+          # Check each commit message for breaking change (major), feat (minor), or fix (patch)
+          echo "$commits" | while read -r commit; do
+            if [[ "$commit" == *"BREAKING CHANGE:"* ]]; then
+              version_bump="major"
+            elif [[ "$commit" == *"feat:"* ]]; then
+              version_bump="minor"
+            elif [[ "$commit" == *"fix:"* ]]; then
+              version_bump="patch"
+            fi
+          done
+
+          # Output the detected version bump type
+          echo "Version bump detected: $version_bump"
+          echo "::set-output name=version_bump::$version_bump"
+
+      # Update the AssemblyFileVersion (4-digit) based on version bump
       - name: Bump FileVersion in AssemblyInfo.cs
         id: bump
         run: |
+          version_bump="${{ steps.detect_version.outputs.version_bump }}"
+          
           if [ -s valid_modules.txt ]; then
             > module_versions.txt
             while IFS= read -r module_path; do
@@ -56,10 +83,16 @@ jobs:
                 echo "Current version: $current_version"
           
                 IFS='.' read -r major minor patch build <<< "$current_version"
-          
-                # Bump build number only
-                new_version="$major.$minor.$patch.$((build + 1))"
-          
+                
+                # Determine which part to bump based on the version bump type
+                if [ "$version_bump" == "major" ]; then
+                  new_version="$((major + 1)).0.0.0"
+                elif [ "$version_bump" == "minor" ]; then
+                  new_version="$major.$((minor + 1)).0.0"
+                elif [ "$version_bump" == "patch" ]; then
+                  new_version="$major.$minor.$((patch + 1)).0"
+                fi
+
                 # Replace full 4-part version safely
                 sed -i "s/AssemblyFileVersion(\"$current_version\"/AssemblyFileVersion(\"$new_version\"/" "$file"
           
@@ -70,7 +103,6 @@ jobs:
           else
             echo "No valid modules found."
           fi
-
 
       # Commit the updated version files
       - name: Commit version bumps
@@ -96,7 +128,7 @@ jobs:
           
               # Add quotes to handle special characters properly
               git tag -a "$tag" -m "Bump ${module} to ${version}"
-              
+              	
               # Push with a token using the full URL (ensure URL is correct)
               git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/caspar5911/CI_CSharp_Practice" "$tag"
             done < module_versions.txt
