@@ -9,5 +9,6 @@ namespace ModuleA
             Console.WriteLine("Hello from Module A!");
             // Add Module A specific logic here
         }
+        
     }
 }
