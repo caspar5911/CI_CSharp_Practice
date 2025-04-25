@@ -1,32 +1,31 @@
-name: Bump and Tag Assembly Versions
+name: Auto Version Bump and Tag
 
 on:
   push:
-    branches: [main]  # Only run on pushes to main branch
+    branches:
+      - main
 
 jobs:
-  version-bump:
+  versioning:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout the repo
+      # Checkout the current code
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Step 2: Detect changed files and collect paths to modules with AssemblyInfo.cs
+      # Detect which files changed
       - name: Detect Changed Files
+        id: detect_changes
         run: |
-          # Get list of changed files in the last commit
+          # Get the list of changed files between current and previous commit
           git diff --name-only HEAD~1 HEAD > changed_modules.txt || true
 
-          # Clear the intermediate output file
+          # Empty the output file that stores valid module paths
           > modules_with_assemblyinfo.txt
 
-          # For each changed file, walk up directories to find Properties/AssemblyInfo.cs
+          # Loop through changed files to find closest AssemblyInfo.cs file upwards
           while read -r filepath; do
             dir=$(dirname "$filepath")
-
-            # Go up until we find AssemblyInfo.cs or hit root
             while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
               if [ -f "$dir/Properties/AssemblyInfo.cs" ]; then
                 echo "$dir" >> modules_with_assemblyinfo.txt
@@ -36,39 +35,32 @@ jobs:
             done
           done < changed_modules.txt
 
-          # Remove duplicates and save to a clean list of valid modules
+          # Deduplicate and sort the list of valid modules
           sort modules_with_assemblyinfo.txt | uniq > valid_modules.txt
-          
-          # Output the valid modules list
-          cat valid_modules.txt
+          cat changed_modules.txt
 
-      # Step 3: Bump full 4-part version in AssemblyInfo.cs (only revision part is increased)
-      - name: Bump Full Version in AssemblyInfo.cs
+      # Update the AssemblyFileVersion (4-digit) in AssemblyInfo.cs
+      - name: Bump FileVersion in AssemblyInfo.cs
+        id: bump
         run: |
-          # Clear previous version info
-          > module_versions.txt
-
-          # Only proceed if valid modules were found
           if [ -s valid_modules.txt ]; then
+            > module_versions.txt
             while IFS= read -r module_path; do
               file="$module_path/Properties/AssemblyInfo.cs"
-              echo "Checking $file"
-
+              echo "Updating version in $file"
               if [ -f "$file" ]; then
-                # Extract current version in format x.y.z.r (e.g., 1.2.3.4)
+                # Extract full 4-part version (e.g., 1.2.3.4)
                 current_version=$(grep -oP 'AssemblyFileVersion\("\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$file")
                 echo "Current version: $current_version"
 
-                # Split version into components
-                IFS='.' read -r major minor build revision <<< "$current_version"
+                IFS='.' read -r major minor patch build <<< "$current_version"
 
-                # Bump revision number
-                new_version="$major.$minor.$build.$((revision + 1))"
+                # Bump build number only
+                new_version="$major.$minor.$patch.$((build + 1))"
 
-                # Replace the version in file using sed
+                # Use sed to replace only the version part
                 sed -i "s/AssemblyFileVersion(\"$current_version/AssemblyFileVersion(\"$new_version/" "$file"
 
-                # Log the updated module and version
                 echo "$module_path|$new_version" >> module_versions.txt
                 echo "Updated to version: $new_version"
               fi
@@ -77,7 +69,7 @@ jobs:
             echo "No valid modules found."
           fi
 
-      # Step 4: Commit the updated version files
+      # Commit the updated version files
       - name: Commit version bumps
         run: |
           if [ -f module_versions.txt ]; then
@@ -90,16 +82,15 @@ jobs:
             echo "No modules updated."
           fi
 
-      # Step 5: Tag the updated modules using the bumped version
+      # Tag each updated module with its new version
       - name: Tag updated modules
         run: |
           if [ -f module_versions.txt ]; then
             while IFS='|' read -r module version; do
-              # Format tag as: path/to/module/v1.2.3.4
               tag="${module}/v${version}"
               echo "Creating tag: $tag"
               git tag -a "$tag" -m "Bump ${module} to ${version}"
-              git push origin "$tag"
+              git push https://x-access-token:${{ secrets.PERSONAL_TOKEN }}@github.com/${{ github.repository }} "$tag"
             done < module_versions.txt
           else
             echo "No versioned modules to tag."
