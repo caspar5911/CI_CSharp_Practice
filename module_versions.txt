@@ -1,1 +1,1 @@
-ModuleB|1.0.2.0
+ModuleB|1.0.3.0
