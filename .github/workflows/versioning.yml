@@ -49,18 +49,16 @@ jobs:
           commits=$(git log --oneline ${{ github.event.before }}..${{ github.sha }})
 
           # Initialize version bump type
-          version_bump="revision"  # Default to patch
+          version_bump="patch"  # Default to patch
 
-          # Check each commit message for breaking change (major), feat (minor), fix (build), or revision
+          # Check each commit message for breaking change (major), feat (minor), or fix (patch)
           echo "$commits" | while read -r commit; do
             if [[ "$commit" == *"BREAKING CHANGE:"* ]]; then
               version_bump="major"
             elif [[ "$commit" == *"feat:"* ]]; then
               version_bump="minor"
             elif [[ "$commit" == *"fix:"* ]]; then
-              version_bump="build"
-            else
-              version_bump="revision"
+              version_bump="patch"
             fi
           done
 
@@ -84,17 +82,15 @@ jobs:
                 current_version=$(grep -oP 'AssemblyFileVersion\("\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$file")
                 echo "Current version: $current_version"
           
-                IFS='.' read -r major minor build revision <<< "$current_version"
+                IFS='.' read -r major minor patch build <<< "$current_version"
                 
                 # Determine which part to bump based on the version bump type
                 if [ "$version_bump" == "major" ]; then
                   new_version="$((major + 1)).0.0.0"
                 elif [ "$version_bump" == "minor" ]; then
                   new_version="$major.$((minor + 1)).0.0"
-                elif [ "$version_bump" == "build" ]; then
-                  new_version="$major.$minor.$((build + 1)).0"
-                else
-                  new_version="$major.$minor.$build.$((revision + 1))"
+                elif [ "$version_bump" == "patch" ]; then
+                  new_version="$major.$minor.$((patch + 1)).0"
                 fi
 
                 # Replace full 4-part version safely
