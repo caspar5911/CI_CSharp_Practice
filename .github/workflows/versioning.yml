@@ -88,10 +88,15 @@ jobs:
         run: |
           if [ -f module_versions.txt ]; then
             while IFS='|' read -r module version; do
+              # Make sure version is quoted and escaped properly
               tag="${module}/v${version}"
               echo "Creating tag: $tag"
+          
+              # Add quotes to handle special characters properly
               git tag -a "$tag" -m "Bump ${module} to ${version}"
-              git push https://x-access-token:${{ secrets.PERSONAL_TOKEN }}@github.com/${{ github.repository }} "$tag"
+              
+              # Push with a token using the full URL (ensure URL is correct)
+              git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/caspar5911/CI_CSharp_Practice" "$tag"
             done < module_versions.txt
           else
             echo "No versioned modules to tag."
