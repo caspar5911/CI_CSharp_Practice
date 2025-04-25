@@ -1,0 +1,103 @@
+name: Auto Version Bump and Tag
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  versioning:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the current code
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Detect which files changed
+      - name: Detect Changed Files
+        id: detect_changes
+        run: |
+          # Get the list of changed files between current and previous commit
+          git diff --name-only HEAD~1 HEAD > changed_modules.txt || true
+
+          # Empty the output file that stores valid module paths
+          > modules_with_assemblyinfo.txt
+
+          # Loop through changed files to find closest AssemblyInfo.cs file upwards
+          while read -r filepath; do
+            dir=$(dirname "$filepath")
+            while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
+              if [ -f "$dir/Properties/AssemblyInfo.cs" ]; then
+                echo "$dir" >> modules_with_assemblyinfo.txt
+                break
+              fi
+              dir=$(dirname "$dir")
+            done
+          done < changed_modules.txt
+
+          # Deduplicate and sort the list of valid modules
+          sort modules_with_assemblyinfo.txt | uniq > valid_modules.txt
+          cat changed_modules.txt
+
+      # Update the AssemblyFileVersion (4-digit) in AssemblyInfo.cs
+      - name: Bump FileVersion in AssemblyInfo.cs
+        id: bump
+        run: |
+          if [ -s valid_modules.txt ]; then
+            > module_versions.txt
+            while IFS= read -r module_path; do
+              file="$module_path/Properties/AssemblyInfo.cs"
+              echo "Updating version in $file"
+              if [ -f "$file" ]; then
+                # Extract full 4-part version (e.g., 1.2.3.4)
+                current_version=$(grep -oP 'AssemblyFileVersion\("\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$file")
+                echo "Current version: $current_version"
+          
+                IFS='.' read -r major minor patch build <<< "$current_version"
+          
+                # Bump build number only
+                new_version="$major.$minor.$patch.$((build + 1))"
+          
+                # Replace full 4-part version safely
+                sed -i "s/AssemblyFileVersion(\"$current_version\"/AssemblyFileVersion(\"$new_version\"/" "$file"
+          
+                echo "$module_path|$new_version" >> module_versions.txt
+                echo "Updated to version: $new_version"
+              fi
+            done < valid_modules.txt
+          else
+            echo "No valid modules found."
+          fi
+
+
+      # Commit the updated version files
+      - name: Commit version bumps
+        run: |
+          if [ -f module_versions.txt ]; then
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git add .
+            git commit -m "Bump AssemblyFileVersion for updated modules"
+            git push
+          else
+            echo "No modules updated."
+          fi
+
+      # Tag each updated module with its new version
+      - name: Tag updated modules
+        run: |
+          if [ -f module_versions.txt ]; then
+            while IFS='|' read -r module version; do
+              # Make sure version is quoted and escaped properly
+              tag="${module}/v${version}"
+              echo "Creating tag: $tag"
+          
+              # Add quotes to handle special characters properly
+              git tag -a "$tag" -m "Bump ${module} to ${version}"
+              
+              # Push with a token using the full URL (ensure URL is correct)
+              git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/caspar5911/CI_CSharp_Practice" "$tag"
+            done < module_versions.txt
+          else
+            echo "No versioned modules to tag."
+          fi
