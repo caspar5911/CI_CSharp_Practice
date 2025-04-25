@@ -54,6 +54,8 @@ jobs:
 
           # Check each commit message for breaking change (major), feat (minor), or fix (build)
           echo "$commits" | while read -r commit; do
+            echo "CLLLLL"
+            echo "$commit"
             if [[ "$commit" == *"BREAKING CHANGE:"* ]]; then
               version_bump="major"
             elif [[ "$commit" == *"feat:"* ]]; then
