@@ -1,1 +1,1 @@
-ModuleB|
+Modules/ModuleC|1.0.1.0
