@@ -70,7 +70,7 @@ jobs:
 
       # Update the AssemblyFileVersion (4-digit) based on version bump
       - name: Bump FileVersion in AssemblyInfo.cs
-        id: bump
+        id: bumpAssemblyInfo
         run: |
           version_bump="${{ steps.detect_version.outputs.version_bump }}"
           
@@ -100,6 +100,47 @@ jobs:
                 # Replace full 4-part version safely
                 sed -i "s/AssemblyFileVersion(\"$current_version\"/AssemblyFileVersion(\"$new_version\"/" "$file"
           
+                echo "$module_path|$new_version" >> module_versions.txt
+                echo "Updated to version: $new_version"
+              fi
+            done < valid_modules.txt
+          else
+            echo "No valid modules found."
+          fi
+
+      - name: Bump Version in .csproj
+        id: bumpCsproj
+        run: |
+          version_bump="${{ steps.detect_version.outputs.version_bump }}"
+          
+          if [ -s valid_modules.txt ]; then
+            > module_versions.txt
+            while IFS= read -r module_path; do
+              csproj_file="$module_path/*.csproj"
+              echo "Updating version in $csproj_file"
+              
+              if [ -f "$csproj_file" ]; then
+                # Extract current version from the .csproj file
+                current_version=$(grep -oP '<Version>\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$csproj_file")
+                echo "Current version: $current_version"
+          
+                IFS='.' read -r major minor build revision <<< "$current_version"
+                
+                # Determine which part to bump based on the version bump type
+                if [ "$version_bump" == "major" ]; then
+                  new_version="$((major + 1)).0.0.0"
+                elif [ "$version_bump" == "minor" ]; then
+                  new_version="$major.$((minor + 1)).0.0"
+                elif [ "$version_bump" == "build" ]; then
+                  new_version="$major.$minor.$((build + 1)).0"
+                else
+                  new_version="$major.$minor.$build.$((revision + 1))"
+                fi
+      
+                # Replace version in the .csproj file (both <Version> and <FileVersion>)
+                sed -i "s|<Version>$current_version</Version>|<Version>$new_version</Version>|g" "$csproj_file"
+                sed -i "s|<FileVersion>$current_version</FileVersion>|<FileVersion>$new_version</FileVersion>|g" "$csproj_file"
+      
                 echo "$module_path|$new_version" >> module_versions.txt
                 echo "Updated to version: $new_version"
               fi
