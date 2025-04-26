@@ -116,7 +116,7 @@ jobs:
           if [ -s valid_modules.txt ]; then
             > module_versions.txt
             while IFS= read -r module_path; do
-              csproj_file=$(find "$module_path" -maxdepth 1 -name "*.csproj" | head -n 1)
+              csproj_file=$(find "$module_path" -maxdepth 1 -name "*.csproj")
               echo "Updating version in $csproj_file"
               
               if [ -f "$csproj_file" ]; then
