@@ -28,8 +28,9 @@ jobs:
             -not -path "*/obj/*" -print
           # Find all AssemblyInfo.cs files
           find . -type f -name "AssemblyInfo.cs" \
-            -not -path "*/bin/*" \
-            -not -path "*/obj/*" -print | while read -r file; do
+            ! -path "*/bin/*" \
+            ! -path "*/obj/*" \
+            -print0 | while IFS= read -r -d '' file; do
             module_dir=$(dirname "$file")
             module_name=$(basename "$(dirname "$module_dir")")  # Get parent of /Properties
             # echo "Checking $module_name ($file)..."
