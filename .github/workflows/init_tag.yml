@@ -7,44 +7,40 @@ jobs:
   init-tags:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the current code
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Configure Git user identity
       - name: Set up Git user
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
 
-      # Run init tags script
-      - name: Initialize Tags
+      - name: Initialize Tags for All Modules
         run: |
-          # Define the logic to initialize tags
           echo "Initializing tags for all modules..."
 
-          # Get the list of all directories that might contain an AssemblyInfo.cs file
-          directories=$(find . -type f -name "AssemblyInfo.cs" -exec dirname {} \; | sort | uniq)
+          # Find all AssemblyInfo.cs files
+          find . -type f -name "AssemblyInfo.cs" | while read -r file; do
+            module_dir=$(dirname "$file")
+            module_name=$(basename "$(dirname "$module_dir")")  # Get parent of /Properties
 
-          # Loop over directories and initialize tags for each module
-          for dir in $directories; do
-            echo "Checking $dir for tags..."
+            # Extract the AssemblyFileVersion value (e.g., 1.2.3.4)
+            version=$(grep -oP 'AssemblyFileVersion\("\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$file")
 
-            # Determine the tag name (module name and initial version)
-            module_name=$(basename "$dir")
-            tag="v1.0.0"
+            if [ -n "$version" ]; then
+              tag="${module_name}/v${version}"
+              echo "Checking for tag: $tag"
 
-            # Check if the tag already exists
-            if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
-              echo "Tag $tag already exists for $module_name, skipping creation."
+              if git rev-parse "$tag" >/dev/null 2>&1; then
+                echo "Tag $tag already exists, skipping."
+              else
+                echo "Creating and pushing tag: $tag"
+                git tag -a "$tag" -m "Initial version for $module_name"
+                git push origin "$tag"
+              fi
             else
-              echo "Creating tag: $tag for $module_name"
-              git tag -a "$tag" -m "Initial version for $module_name"
+              echo "No version found in $file, skipping..."
             fi
           done
-
-          # Push the tags to the remote repository
-          echo "Pushing tags to the repository..."
-          git push --tags
