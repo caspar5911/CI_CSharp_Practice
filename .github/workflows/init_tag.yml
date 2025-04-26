@@ -25,7 +25,7 @@ jobs:
           # set +e   # Don't exit script on first error
           
           # Find all AssemblyInfo.cs files
-          find . -type f -name "AssemblyInfo.cs" | while read -r file; do
+          for file in $(find . -type f -name "AssemblyInfo.cs"); do
             module_dir=$(dirname "$file")
             module_name=$(basename "$(dirname "$module_dir")")  # Get parent of /Properties
             # echo "Checking $module_name ($file)..."
