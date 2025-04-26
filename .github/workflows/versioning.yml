@@ -129,27 +129,34 @@ jobs:
 
                 current_version=$(grep -oP '<FileVersion>\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$csproj_file")
 
-                if [ -n "$current_version" ]; then
-                  echo "Current .csproj version: $current_version"
-                  IFS='.' read -r major minor build revision <<< "$current_version"
-
-                  if [ "$version_bump" == "major" ]; then
-                    new_version="$((major + 1)).0.0.0"
-                  elif [ "$version_bump" == "minor" ]; then
-                    new_version="$major.$((minor + 1)).0.0"
-                  elif [ "$version_bump" == "build" ]; then
-                    new_version="$major.$minor.$((build + 1)).0"
-                  else
-                    new_version="$major.$minor.$build.$((revision + 1))"
-                  fi
-
-                  echo "Updating .csproj to new version: $new_version"
-                  sed -i "s|<FileVersion>$current_version</FileVersion>|<FileVersion>$new_version</FileVersion>|g" "$csproj_file"
-
-                  echo "$module_path|$new_version" >> module_versions.txt
-                else
+                if [ -z "$current_version" ]; then
                   echo "Warning: <FileVersion> not found in $csproj_file"
+                  echo "Inserting <FileVersion>1.0.0.0</FileVersion> after first <PropertyGroup>..."
+
+                  # Insert <FileVersion>1.0.0.0 after the first <PropertyGroup> line
+                  sed -i '0,/<PropertyGroup>/s|<PropertyGroup>|<PropertyGroup>\n    <FileVersion>1.0.0.0</FileVersion>|' "$csproj_file"
+
+                  current_version="1.0.0.0"
                 fi
+
+                echo "Current .csproj FileVersion: $current_version"
+
+                IFS='.' read -r major minor build revision <<< "$current_version"
+
+                if [ "$version_bump" == "major" ]; then
+                  new_version="$((major + 1)).0.0.0"
+                elif [ "$version_bump" == "minor" ]; then
+                  new_version="$major.$((minor + 1)).0.0"
+                elif [ "$version_bump" == "build" ]; then
+                  new_version="$major.$minor.$((build + 1)).0"
+                else
+                  new_version="$major.$minor.$build.$((revision + 1))"
+                fi
+
+                echo "Updating .csproj to new FileVersion: $new_version"
+                sed -i "s|<FileVersion>$current_version</FileVersion>|<FileVersion>$new_version</FileVersion>|g" "$csproj_file"
+
+                echo "$module_path|$new_version" >> module_versions.txt
               else
                 echo "Warning: No .csproj found in $module_path"
               fi
@@ -157,6 +164,7 @@ jobs:
           else
             echo "No valid modules found to bump .csproj."
           fi
+
 
       # Step 6: Commit updated files
       - name: Commit Updated Versions
