@@ -1,2 +1,3 @@
-Modules/ModuleC
-Modules/ModuleE
+ModuleA
+ModuleB
+Modules/ModuleD
