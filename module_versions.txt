@@ -34,3 +34,5 @@ ModuleB|3.1.0.0
 Modules/ModuleC|3.1.0.0
 Modules/ModuleD|3.1.0.0
 Modules/ModuleE|3.1.0.0
+Modules/ModuleD|3.1.1.0
+Modules/ModuleE|3.1.1.0
