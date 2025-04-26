@@ -29,7 +29,7 @@ jobs:
           while read -r filepath; do
             dir=$(dirname "$filepath")
             while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
-              if [ -f "$dir/Properties/AssemblyInfo.cs"  || [ -n "$(find "$dir" -maxdepth 1 -name '*.csproj')"]; then
+              if [ -f "$dir/Properties/AssemblyInfo.cs" ] || [ -n "$(find "$dir" -maxdepth 1 -name '*.csproj')" ]; then
                 echo "$dir" >> modules_with_assemblyinfo.txt
                 break
               fi
