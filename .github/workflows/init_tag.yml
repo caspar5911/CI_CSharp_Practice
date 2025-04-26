@@ -23,7 +23,9 @@ jobs:
 
           # set -x   # Debug: print all commands
           # set +e   # Don't exit script on first error
-          
+          find . -type f -name "AssemblyInfo.cs" \
+            -not -path "*/bin/*" \
+            -not -path "*/obj/*" -print
           # Find all AssemblyInfo.cs files
           find . -type f -name "AssemblyInfo.cs" \
             -not -path "*/bin/*" \
