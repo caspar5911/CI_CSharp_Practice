@@ -6,4 +6,4 @@ using System.Reflection;
 [assembly: AssemblyCompany("YourCompany")]
 [assembly: AssemblyProduct("ModuleA Product")]
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.2")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
