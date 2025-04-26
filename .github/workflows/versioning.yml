@@ -128,7 +128,8 @@ jobs:
                 echo "Found .csproj: $csproj_file"
 
                 current_version=$(grep -oP '<FileVersion>\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$csproj_file")
-
+                echo "111111111111"
+                echo $current_version
                 if [ -z "$current_version" ]; then
                   echo "Warning: <FileVersion> not found in $csproj_file"
                   echo "Inserting <FileVersion>1.0.0.0</FileVersion> after first <PropertyGroup>..."
