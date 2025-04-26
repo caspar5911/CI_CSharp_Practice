@@ -1,1 +1,1 @@
-ModuleB/Properties/AssemblyInfo.cs
+.github/workflows/reset_all_version.yml
