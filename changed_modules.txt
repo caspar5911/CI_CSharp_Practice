@@ -1,1 +1,1 @@
-.github/workflows/reset_all_version.yml
+.github/workflows/versioning.yml
