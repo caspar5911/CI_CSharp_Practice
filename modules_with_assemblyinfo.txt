@@ -1,5 +1,9 @@
 ModuleA
+ModuleA
+ModuleB
 ModuleB
 Modules/ModuleC
+Modules/ModuleC
+Modules/ModuleD
 Modules/ModuleD
 Modules/ModuleE
