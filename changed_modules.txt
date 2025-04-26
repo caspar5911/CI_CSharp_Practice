@@ -1,10 +1,6 @@
 .github/workflows/versioning.yml
-ModuleA/ModuleA.csproj
 ModuleA/Program.cs
-ModuleB/ModuleB.csproj
 ModuleB/Program.cs
-Modules/ModuleC/ModuleB.csproj
 Modules/ModuleC/Program.cs
-Modules/ModuleD/ModuleB.csproj
 Modules/ModuleD/Program.cs
 Modules/ModuleE/Program.cs
