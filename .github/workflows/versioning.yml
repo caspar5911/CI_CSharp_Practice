@@ -144,7 +144,6 @@ jobs:
                   fi
 
                   echo "Updating .csproj to new version: $new_version"
-                  sed -i "s|<Version>$current_version</Version>|<Version>$new_version</Version>|g" "$csproj_file"
                   sed -i "s|<FileVersion>$current_version</FileVersion>|<FileVersion>$new_version</FileVersion>|g" "$csproj_file"
 
                   echo "$module_path|$new_version" >> module_versions.txt
