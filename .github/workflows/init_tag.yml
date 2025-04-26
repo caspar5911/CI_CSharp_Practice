@@ -29,7 +29,7 @@ jobs:
           # Find all AssemblyInfo.cs files
           find . -type f -name "AssemblyInfo.cs" \
             -not -path "*/bin/*" \
-            -not -path "*/obj/*" | while read -r file; do
+            -not -path "*/obj/*" -print | while read -r file; do
             module_dir=$(dirname "$file")
             module_name=$(basename "$(dirname "$module_dir")")  # Get parent of /Properties
             # echo "Checking $module_name ($file)..."
