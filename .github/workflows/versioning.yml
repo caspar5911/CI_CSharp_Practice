@@ -9,23 +9,22 @@ jobs:
   versioning:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the current code
-      - name: Checkout
+      # Step 1: Checkout the repository
+      - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Full history needed for git diff and git log
 
-      # Detect which files changed
+      # Step 2: Detect Changed Files
       - name: Detect Changed Files
         id: detect_changes
         run: |
-          # Get the list of changed files between current and previous commit
+          echo "Detecting changed files between commits..."
           git diff --name-only ${{ github.event.before }} ${{ github.sha }} > changed_modules.txt || true
 
-          # Empty the output file that stores valid module paths
+          echo "Finding valid modules with AssemblyInfo.cs or .csproj files..."
           > modules_with_assemblyinfo.txt
 
-          # Loop through changed files to find closest AssemblyInfo.cs file upwards
           while read -r filepath; do
             dir=$(dirname "$filepath")
             while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
@@ -37,56 +36,59 @@ jobs:
             done
           done < changed_modules.txt
 
-          # Deduplicate and sort the list of valid modules
+          echo "Deduplicating valid modules..."
           sort modules_with_assemblyinfo.txt | uniq > valid_modules.txt
-          cat changed_modules.txt
 
-      # Detect commit message type (major, minor, patch)
-      - name: Detect Version Type
+          echo "Changed files:"
+          cat changed_modules.txt
+          echo "Detected modules:"
+          cat valid_modules.txt
+
+      # Step 3: Detect Version Type based on commit messages
+      - name: Detect Version Type (major/minor/build/revision)
         id: detect_version
         run: |
-          # Get commit messages between the current and previous commit
+          echo "Detecting version bump type based on commit messages..."
           commits=$(git log --pretty=format:"%s" ${{ github.event.before }}..${{ github.sha }})
-      
-          echo "All commit messages:"
+
+          echo "Commit messages detected:"
           echo "$commits"
-      
-          version_bump="revision"  # Default
-      
+
+          version_bump="revision"  # Default bump type
+
           while read -r commit; do
-            echo "Checking: $commit"
+            echo "Analyzing commit: $commit"
             if [[ "$commit" == *"BREAKING CHANGE:"* ]]; then
               version_bump="major"
-              break  # No need to check further; highest level
+              break
             elif [[ "$commit" == *"feat:"* && "$version_bump" != "major" ]]; then
               version_bump="minor"
             elif [[ "$commit" == *"fix:"* && "$version_bump" == "revision" ]]; then
               version_bump="build"
             fi
           done <<< "$commits"
-      
-          echo "Version bump detected: $version_bump"
+
+          echo "Determined version bump: $version_bump"
           echo "version_bump=$version_bump" >> $GITHUB_OUTPUT
 
-      # Update the AssemblyFileVersion (4-digit) based on version bump
-      - name: Bump FileVersion in AssemblyInfo.cs
+      # Step 4: Bump FileVersion inside AssemblyInfo.cs
+      - name: Bump AssemblyInfo.cs Versions
         id: bumpAssemblyInfo
         run: |
+          echo "Bumping AssemblyInfo.cs versions..."
           version_bump="${{ steps.detect_version.outputs.version_bump }}"
-          
+
           if [ -s valid_modules.txt ]; then
-            > module_versions.txt
             while IFS= read -r module_path; do
               file="$module_path/Properties/AssemblyInfo.cs"
-              echo "Updating version in $file"
               if [ -f "$file" ]; then
-                # Extract full 4-part version (e.g., 1.2.3.4)
+                echo "Processing: $file"
+
                 current_version=$(grep -oP 'AssemblyFileVersion\("\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$file")
                 echo "Current version: $current_version"
-          
+
                 IFS='.' read -r major minor build revision <<< "$current_version"
-                
-                # Determine which part to bump based on the version bump type
+
                 if [ "$version_bump" == "major" ]; then
                   new_version="$((major + 1)).0.0.0"
                 elif [ "$version_bump" == "minor" ]; then
@@ -97,120 +99,101 @@ jobs:
                   new_version="$major.$minor.$build.$((revision + 1))"
                 fi
 
-                # Replace full 4-part version safely
+                echo "Updating to new version: $new_version"
                 sed -i "s/AssemblyFileVersion(\"$current_version\"/AssemblyFileVersion(\"$new_version\"/" "$file"
-          
+
                 echo "$module_path|$new_version" >> module_versions.txt
-                echo "Updated to version: $new_version"
+              else
+                echo "Warning: AssemblyInfo.cs not found in $module_path"
               fi
             done < valid_modules.txt
           else
-            echo "No valid modules found."
+            echo "No valid modules found to bump AssemblyInfo."
           fi
 
-      - name: Bump Version in .csproj
+      # Step 5: Bump Version inside .csproj file
+      - name: Bump .csproj Versions
         id: bumpCsproj
         run: |
-          echo "Starting version bump step..."
+          echo "Bumping .csproj versions..."
           version_bump="${{ steps.detect_version.outputs.version_bump }}"
-          echo "Detected version bump type: $version_bump"
-      
+
           if [ -s valid_modules.txt ]; then
-            echo "valid_modules.txt is not empty, proceeding..."
-            > module_versions.txt
             while IFS= read -r module_path; do
-              echo "Processing module path: $module_path"
-      
+              echo "Checking module: $module_path"
+
               csproj_file=$(find "$module_path" -maxdepth 1 -name "*.csproj")
-              echo "Found csproj_file: $csproj_file"
-      
-              if [ -z "$csproj_file" ]; then
-                echo "Warning: No .csproj file found inside $module_path"
-              fi
-      
-              echo "Checking if csproj file exists: $csproj_file"
-              if [ -f "$csproj_file" ]; then
-                echo ".csproj file exists: $csproj_file"
-      
-                # Extract current version from the .csproj file
+
+              if [ -n "$csproj_file" ]; then
+                echo "Found .csproj: $csproj_file"
+
                 current_version=$(grep -oP '<FileVersion>\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$csproj_file")
-                echo "Extracted current version: $current_version"
-      
-                if [ -z "$current_version" ]; then
-                  echo "Error: Could not find <FileVersion> in $csproj_file"
-                  continue
-                fi
-      
-                IFS='.' read -r major minor build revision <<< "$current_version"
-                echo "Parsed version parts - Major: $major, Minor: $minor, Build: $build, Revision: $revision"
-                
-                # Determine which part to bump based on the version bump type
-                if [ "$version_bump" == "major" ]; then
-                  new_version="$((major + 1)).0.0.0"
-                elif [ "$version_bump" == "minor" ]; then
-                  new_version="$major.$((minor + 1)).0.0"
-                elif [ "$version_bump" == "build" ]; then
-                  new_version="$major.$minor.$((build + 1)).0"
+
+                if [ -n "$current_version" ]; then
+                  echo "Current .csproj version: $current_version"
+                  IFS='.' read -r major minor build revision <<< "$current_version"
+
+                  if [ "$version_bump" == "major" ]; then
+                    new_version="$((major + 1)).0.0.0"
+                  elif [ "$version_bump" == "minor" ]; then
+                    new_version="$major.$((minor + 1)).0.0"
+                  elif [ "$version_bump" == "build" ]; then
+                    new_version="$major.$minor.$((build + 1)).0"
+                  else
+                    new_version="$major.$minor.$build.$((revision + 1))"
+                  fi
+
+                  echo "Updating .csproj to new version: $new_version"
+                  sed -i "s|<FileVersion>$current_version</FileVersion>|<FileVersion>$new_version</FileVersion>|g" "$csproj_file"
+
+                  echo "$module_path|$new_version" >> module_versions.txt
                 else
-                  new_version="$major.$minor.$build.$((revision + 1))"
+                  echo "Warning: <FileVersion> not found in $csproj_file"
                 fi
-      
-                echo "Calculated new version: $new_version"
-      
-                # Replace version in the .csproj file (<FileVersion>)
-                echo "Updating <Version> and <FileVersion> fields..."
-                sed -i "s|<FileVersion>$current_version</FileVersion>|<FileVersion>$new_version</FileVersion>|g" "$csproj_file"
-      
-                echo "$module_path|$new_version" >> module_versions.txt
-                echo "Successfully updated $module_path to version $new_version"
               else
-                echo "Error: File $csproj_file does not exist or is not a regular file."
+                echo "Warning: No .csproj found in $module_path"
               fi
             done < valid_modules.txt
           else
-            echo "Error: valid_modules.txt is empty or not found."
+            echo "No valid modules found to bump .csproj."
           fi
 
-          
-      # Commit the updated version files
-      - name: Commit version bumps
+      # Step 6: Commit updated files
+      - name: Commit Updated Versions
         run: |
+          echo "Committing updated files if any changes detected..."
           if [ -f module_versions.txt ]; then
-            # Check if there are any changes to commit
-            git diff --exit-code || echo "Changes detected"
-            
-            # If there are changes, commit and push
-            if [[ -n $(git status -s) ]]; then
+            if git diff --quiet; then
+              echo "No changes to commit."
+            else
+              echo "Changes detected, committing..."
               git config user.name "github-actions"
               git config user.email "github-actions@github.com"
               git add .
-              git commit -m "Bump AssemblyFileVersion for updated modules"
+              git commit -m "Bump version numbers for updated modules"
               git push
-            else
-              echo "No changes to commit."
             fi
           else
-            echo "No modules updated."
+            echo "No modules were updated, skipping commit."
           fi
 
-      # Tag each updated module with its new version
-      - name: Tag updated modules
+      # Step 7: Tag Updated Modules
+      - name: Tag Updated Modules
         run: |
+          echo "Tagging updated modules..."
           if [ -f module_versions.txt ]; then
             while IFS='|' read -r module version; do
-              # Make sure version is quoted and escaped properly
               tag="${module}/v${version}"
 
-              # Check if the tag already exists
+              echo "Checking if tag $tag already exists..."
               if git rev-parse "$tag" >/dev/null 2>&1; then
-                echo "Tag $tag already exists, skipping tag creation."
+                echo "Tag $tag already exists. Skipping."
               else
-                echo "Creating tag: $tag"
-                # Create and push the tag
+                echo "Creating new tag: $tag"
                 git tag -a "$tag" -m "Bump ${module} to ${version}"
-                git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/caspar5911/CI_CSharp_Practice" "$tag"
+                git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" "$tag"
               fi
             done < module_versions.txt
           else
-            echo "No versioned modules to tag."
+            echo "No modules to tag."
           fi
