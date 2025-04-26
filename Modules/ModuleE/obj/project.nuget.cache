@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "oonTE5JJAa0=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Caspar\\Desktop\\CICDNotes\\CI_CSharp_Practice\\ModuleB\\ModuleB.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Caspar\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.33\\microsoft.netcore.app.ref.6.0.33.nupkg.sha512",
+    "C:\\Users\\Caspar\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.33\\microsoft.windowsdesktop.app.ref.6.0.33.nupkg.sha512",
+    "C:\\Users\\Caspar\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.33\\microsoft.aspnetcore.app.ref.6.0.33.nupkg.sha512",
+    "C:\\Users\\Caspar\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\6.0.33\\microsoft.netcore.app.host.win-x64.6.0.33.nupkg.sha512"
+  ],
+  "logs": []
+}
