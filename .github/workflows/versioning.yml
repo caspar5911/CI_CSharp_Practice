@@ -121,7 +121,7 @@ jobs:
               
               if [ -f "$csproj_file" ]; then
                 # Extract current version from the .csproj file
-                current_version=$(grep -oP '<Version>\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$csproj_file")
+                current_version=$(grep -oP '<FileVersion>\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$csproj_file")
                 echo "Current version: $current_version"
           
                 IFS='.' read -r major minor build revision <<< "$current_version"
