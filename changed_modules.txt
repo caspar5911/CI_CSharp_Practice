@@ -1,1 +1,2 @@
+Modules/ModuleE/ModuleB.csproj
 Modules/ModuleE/Program.cs
