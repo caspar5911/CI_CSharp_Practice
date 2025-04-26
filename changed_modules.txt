@@ -1,1 +1,1 @@
-Modules/ModuleE/ModuleB.csproj
+.github/workflows/reset_all_version.yml
