@@ -19,3 +19,5 @@ ModuleB|1.1.0.0
 Modules/ModuleC|1.1.0.0
 Modules/ModuleD|1.1.0.0
 Modules/ModuleE|1.1.0.0
+Modules/ModuleC|2.0.0.0
+Modules/ModuleE|2.0.0.0
