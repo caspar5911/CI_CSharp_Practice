@@ -1,3 +1,11 @@
 Modules/ModuleE|3.0.0.0
 Modules/ModuleE|1.0.0.1
 Modules/ModuleE|1.0.0.1
+ModuleA|2.0.0.0
+ModuleB|2.0.0.0
+Modules/ModuleC|2.0.0.0
+Modules/ModuleD|2.0.0.0
+ModuleA|2.0.0.0
+ModuleB|2.0.0.0
+Modules/ModuleC|2.0.0.0
+Modules/ModuleD|2.0.0.0
