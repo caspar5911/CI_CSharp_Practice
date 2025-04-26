@@ -111,20 +111,38 @@ jobs:
       - name: Bump Version in .csproj
         id: bumpCsproj
         run: |
+          echo "Starting version bump step..."
           version_bump="${{ steps.detect_version.outputs.version_bump }}"
-          
+          echo "Detected version bump type: $version_bump"
+      
           if [ -s valid_modules.txt ]; then
+            echo "valid_modules.txt is not empty, proceeding..."
             > module_versions.txt
             while IFS= read -r module_path; do
+              echo "Processing module path: $module_path"
+      
               csproj_file=$(find "$module_path" -maxdepth 1 -name "*.csproj")
-              echo "Updating version in $csproj_file"
-              
+              echo "Found csproj_file: $csproj_file"
+      
+              if [ -z "$csproj_file" ]; then
+                echo "Warning: No .csproj file found inside $module_path"
+              fi
+      
+              echo "Checking if csproj file exists: $csproj_file"
               if [ -f "$csproj_file" ]; then
+                echo ".csproj file exists: $csproj_file"
+      
                 # Extract current version from the .csproj file
                 current_version=$(grep -oP '<FileVersion>\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$csproj_file")
-                echo "Current version: $current_version"
+                echo "Extracted current version: $current_version"
+      
+                if [ -z "$current_version" ]; then
+                  echo "Error: Could not find <FileVersion> in $csproj_file"
+                  continue
+                fi
       
                 IFS='.' read -r major minor build revision <<< "$current_version"
+                echo "Parsed version parts - Major: $major, Minor: $minor, Build: $build, Revision: $revision"
                 
                 # Determine which part to bump based on the version bump type
                 if [ "$version_bump" == "major" ]; then
@@ -137,19 +155,23 @@ jobs:
                   new_version="$major.$minor.$build.$((revision + 1))"
                 fi
       
+                echo "Calculated new version: $new_version"
+      
                 # Replace version in the .csproj file (both <Version> and <FileVersion>)
+                echo "Updating <Version> and <FileVersion> fields..."
                 sed -i "s|<Version>$current_version</Version>|<Version>$new_version</Version>|g" "$csproj_file"
                 sed -i "s|<FileVersion>$current_version</FileVersion>|<FileVersion>$new_version</FileVersion>|g" "$csproj_file"
       
                 echo "$module_path|$new_version" >> module_versions.txt
-                echo "Updated to version: $new_version"
+                echo "Successfully updated $module_path to version $new_version"
               else
-                echo "No .csproj file found in $module_path"
+                echo "Error: File $csproj_file does not exist or is not a regular file."
               fi
             done < valid_modules.txt
           else
-            echo "No valid modules found."
+            echo "Error: valid_modules.txt is empty or not found."
           fi
+
           
       # Commit the updated version files
       - name: Commit version bumps
