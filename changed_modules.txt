@@ -1,1 +1,1 @@
-Modules/ModuleE/ModuleB.csproj
+.github/workflows/versioning.yml
