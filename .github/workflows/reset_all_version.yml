@@ -1,0 +1,42 @@
+name: Reset AssemblyInfo Versions
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  reset_versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reset All AssemblyInfo Versions to 1.0.0.0
+        run: |
+          echo "Finding and resetting AssemblyInfo.cs files..."
+
+          # Find all AssemblyInfo.cs except in bin/obj folders
+          find . -type f -name "AssemblyInfo.cs" \
+            -not -path "*/bin/*" \
+            -not -path "*/obj/*" > assembly_files.txt
+
+          while IFS= read -r file; do
+            echo "Resetting $file"
+            # Reset AssemblyFileVersion
+            sed -i 's/AssemblyFileVersion(".*")/AssemblyFileVersion("1.0.0.0")/' "$file"
+            # Optionally reset AssemblyVersion too
+            sed -i 's/AssemblyVersion(".*")/AssemblyVersion("1.0.0.0")/' "$file"
+          done < assembly_files.txt
+
+      - name: Commit and Push Changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git add .
+            git commit -m "Reset all AssemblyInfo.cs versions to 1.0.0.0"
+            git push
+          else
+            echo "No changes to commit."
+          fi
