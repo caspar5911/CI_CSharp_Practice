@@ -37,7 +37,7 @@ jobs:
               else
                 echo "Creating and pushing tag: $tag"
                 git tag -a "$tag" -m "Initial version for $module_name"
-                git push origin "$tag"
+                git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/caspar5911/CI_CSharp_Practice" "$tag"
               fi
             else
               echo "No version found in $file, skipping..."
