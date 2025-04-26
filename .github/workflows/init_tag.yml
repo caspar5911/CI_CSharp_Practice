@@ -17,23 +17,22 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
 
-      - name: Initialize Tags for All Modules
+      - name: Init tags for all modules
+        shell: bash
         run: |
           echo "Initializing tags for all modules..."
 
-          # Find all AssemblyInfo.cs files
           find . -type f -name "AssemblyInfo.cs" | while read -r file; do
             module_dir=$(dirname "$file")
             module_name=$(basename "$(dirname "$module_dir")")  # Get parent of /Properties
 
-            # Extract the AssemblyFileVersion value (e.g., 1.2.3.4)
             version=$(grep -oP 'AssemblyFileVersion\("\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$file")
 
             if [ -n "$version" ]; then
               tag="${module_name}/v${version}"
               echo "Checking for tag: $tag"
 
-              if git rev-parse "$tag" >/dev/null 2>&1; then
+              if git rev-parse --quiet --verify "refs/tags/$tag" >/dev/null; then
                 echo "Tag $tag already exists, skipping."
               else
                 echo "Creating and pushing tag: $tag"
