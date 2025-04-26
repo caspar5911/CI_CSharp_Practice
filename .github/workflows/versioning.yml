@@ -157,9 +157,8 @@ jobs:
       
                 echo "Calculated new version: $new_version"
       
-                # Replace version in the .csproj file (both <Version> and <FileVersion>)
+                # Replace version in the .csproj file (<FileVersion>)
                 echo "Updating <Version> and <FileVersion> fields..."
-                sed -i "s|<Version>$current_version</Version>|<Version>$new_version</Version>|g" "$csproj_file"
                 sed -i "s|<FileVersion>$current_version</FileVersion>|<FileVersion>$new_version</FileVersion>|g" "$csproj_file"
       
                 echo "$module_path|$new_version" >> module_versions.txt
