@@ -128,18 +128,9 @@ jobs:
                 echo "Found .csproj: $csproj_file"
 
                 current_version=$(grep -oP '<FileVersion>\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$csproj_file" || true)
-                echo "111111111111"
-                echo $current_version
-                if [ -z "$current_version" ]; then
-                  echo "Warning: <FileVersion> not found in $csproj_file"
-                  echo "Inserting <FileVersion>1.0.0.0</FileVersion> after first <PropertyGroup>..."
 
-                  # Insert <FileVersion>1.0.0.0 after the first <PropertyGroup> line
-                  sed -i '0,/<PropertyGroup>/s|<PropertyGroup>|<PropertyGroup>\n    <FileVersion>1.0.0.0</FileVersion>|' "$csproj_file"
-
-                  current_version="1.0.0.0"
-                  echo "Current .csproj FileVersion: $current_version"
-
+                if [ -n "$current_version" ]; then
+                  echo "Current .csproj version: $current_version"
                   IFS='.' read -r major minor build revision <<< "$current_version"
 
                   if [ "$version_bump" == "major" ]; then
@@ -152,12 +143,13 @@ jobs:
                     new_version="$major.$minor.$build.$((revision + 1))"
                   fi
 
-                  echo "Updating .csproj to new FileVersion: $new_version"
+                  echo "Updating .csproj to new version: $new_version"
+                  sed -i "s|<Version>$current_version</Version>|<Version>$new_version</Version>|g" "$csproj_file"
                   sed -i "s|<FileVersion>$current_version</FileVersion>|<FileVersion>$new_version</FileVersion>|g" "$csproj_file"
 
                   echo "$module_path|$new_version" >> module_versions.txt
                 else
-                  echo FileVersion not found in $csproj_file
+                  echo "Warning: <FileVersion> not found in $csproj_file"
                 fi
               else
                 echo "Warning: No .csproj found in $module_path"
