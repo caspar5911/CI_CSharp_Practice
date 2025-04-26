@@ -1,0 +1,5 @@
+./Modules/ModuleC/ModuleB.csproj
+./Modules/ModuleD/ModuleB.csproj
+./Modules/ModuleE/ModuleB.csproj
+./ModuleB/ModuleB.csproj
+./ModuleA/ModuleA.csproj

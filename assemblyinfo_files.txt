@@ -1,0 +1,4 @@
+./Modules/ModuleC/Properties/AssemblyInfo.cs
+./Modules/ModuleD/Properties/AssemblyInfo.cs
+./ModuleB/Properties/AssemblyInfo.cs
+./ModuleA/Properties/AssemblyInfo.cs
