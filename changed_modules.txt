@@ -1,3 +1,5 @@
 ModuleA/Program.cs
 ModuleB/Program.cs
+Modules/ModuleC/Program.cs
 Modules/ModuleD/Program.cs
+Modules/ModuleE/Program.cs
