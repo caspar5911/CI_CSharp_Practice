@@ -116,14 +116,14 @@ jobs:
           if [ -s valid_modules.txt ]; then
             > module_versions.txt
             while IFS= read -r module_path; do
-              csproj_file="$module_path/*.csproj"
+              csproj_file=$(find "$module_path" -maxdepth 1 -name "*.csproj" | head -n 1)
               echo "Updating version in $csproj_file"
               
               if [ -f "$csproj_file" ]; then
                 # Extract current version from the .csproj file
                 current_version=$(grep -oP '<FileVersion>\K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$csproj_file")
                 echo "Current version: $current_version"
-          
+      
                 IFS='.' read -r major minor build revision <<< "$current_version"
                 
                 # Determine which part to bump based on the version bump type
@@ -143,12 +143,14 @@ jobs:
       
                 echo "$module_path|$new_version" >> module_versions.txt
                 echo "Updated to version: $new_version"
+              else
+                echo "No .csproj file found in $module_path"
               fi
             done < valid_modules.txt
           else
             echo "No valid modules found."
           fi
-
+          
       # Commit the updated version files
       - name: Commit version bumps
         run: |
