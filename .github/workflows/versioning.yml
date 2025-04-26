@@ -137,26 +137,27 @@ jobs:
                   sed -i '0,/<PropertyGroup>/s|<PropertyGroup>|<PropertyGroup>\n    <FileVersion>1.0.0.0</FileVersion>|' "$csproj_file"
 
                   current_version="1.0.0.0"
-                fi
+                  echo "Current .csproj FileVersion: $current_version"
 
-                echo "Current .csproj FileVersion: $current_version"
+                  IFS='.' read -r major minor build revision <<< "$current_version"
 
-                IFS='.' read -r major minor build revision <<< "$current_version"
+                  if [ "$version_bump" == "major" ]; then
+                    new_version="$((major + 1)).0.0.0"
+                  elif [ "$version_bump" == "minor" ]; then
+                    new_version="$major.$((minor + 1)).0.0"
+                  elif [ "$version_bump" == "build" ]; then
+                    new_version="$major.$minor.$((build + 1)).0"
+                  else
+                    new_version="$major.$minor.$build.$((revision + 1))"
+                  fi
 
-                if [ "$version_bump" == "major" ]; then
-                  new_version="$((major + 1)).0.0.0"
-                elif [ "$version_bump" == "minor" ]; then
-                  new_version="$major.$((minor + 1)).0.0"
-                elif [ "$version_bump" == "build" ]; then
-                  new_version="$major.$minor.$((build + 1)).0"
+                  echo "Updating .csproj to new FileVersion: $new_version"
+                  sed -i "s|<FileVersion>$current_version</FileVersion>|<FileVersion>$new_version</FileVersion>|g" "$csproj_file"
+
+                  echo "$module_path|$new_version" >> module_versions.txt
                 else
-                  new_version="$major.$minor.$build.$((revision + 1))"
+                  echo FileVersion not found in $csproj_file
                 fi
-
-                echo "Updating .csproj to new FileVersion: $new_version"
-                sed -i "s|<FileVersion>$current_version</FileVersion>|<FileVersion>$new_version</FileVersion>|g" "$csproj_file"
-
-                echo "$module_path|$new_version" >> module_versions.txt
               else
                 echo "Warning: No .csproj found in $module_path"
               fi
