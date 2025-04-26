@@ -1,2 +1,3 @@
-Modules/ModuleC/Program.cs
-Modules/ModuleE/Program.cs
+ModuleA/Program.cs
+ModuleB/Program.cs
+Modules/ModuleD/Program.cs
