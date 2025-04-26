@@ -1,3 +1,4 @@
+.github/workflows/versioning.yml
 ModuleA/Program.cs
 ModuleB/Program.cs
 Modules/ModuleC/Program.cs
